@@ -1,0 +1,112 @@
+input[type="file"]{
+    display: none;
+}
+
+.dropzone{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #696969;
+    border-style: dashed;
+    background-color: #333;
+    width: 50%;
+    min-height: 200px;
+    margin: 20px auto;
+}
+
+.dropzone h1{
+    font-size: 25px;
+    margin: 5px;
+}
+
+.dropzone button{
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #8046dd;
+    cursor: pointer;
+    transition: background-color 0.5s;
+    margin-top: 20px;
+}
+  
+.dropzone button:hover {
+    background-color: #8c5bdb;
+}
+
+.uploads {
+    width: 50%;
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    margin: 20px auto;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #444;
+    border-color: #fff;
+    border-width: thin;
+    border-style: solid;
+    padding: 15px;
+    width: 100%;
+    min-width: 400px;
+    box-sizing: border-box;
+}
+
+.file-item span {
+    font-size: 16px;
+}
+
+.file-item button {
+    background-color: #d12424;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.file-item button:hover {
+    background-color: #f52c2cfd;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column; /* Stack name and size vertically */
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.actions button {
+    padding: 10px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.actions button:first-child {
+    background-color: #1d1919;
+}
+
+.actions button:last-child {
+    background-color: #8046dd;
+}
+
+.actions button:first-child:hover {
+    background-color: #3f363636;
+}
+
+.actions button:last-child:hover {
+    background-color: #8c5bdb;
+}
