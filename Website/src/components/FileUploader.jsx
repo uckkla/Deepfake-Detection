@@ -3,6 +3,7 @@ import "./FileUploader.css"
 
 const FileUploader = () => {
     const [files, setFiles] = useState(null);
+    const [uploading, setUploading] = useState({});
     const inputRef = useRef();
 
     const handleDragOver = (event) => {
@@ -14,8 +15,40 @@ const FileUploader = () => {
         setFiles(event.dataTransfer.files);
     };
 
-    const handleUpload = () => {
+    // Add implementation for "uploading..." for each individual file.
+    // Change state to "done!" when finished. Also make sure that analyse
+    // button only shows when file is uploaded.
+    const handleUpload = async () => {
+        if (!files) return;
 
+        const data = new FormData();
+        files.forEach(file => {
+            data.append("files", file);
+        })
+
+        //setUploading(newLoadingState);
+
+        // Attempt connection to server
+        try{
+            const response = await fetch("http://127.0.0.1:5000/uploads", {
+                method: "POST",
+                body: data
+            });
+
+            const jsonResponse = await response.json();
+            if (response.ok){
+                console.log("Uploaded files:", jsonResponse.uploaded);
+                //alert("Files uploaded successfully!");
+            }
+            else{
+                console.error("Upload failed:", jsonResponse);
+                //alert(`Some files failed to upload: ${jsonResponse.disallowed_files || "Unknown Error"}`);
+            }
+        } catch (error){
+            console.error("Error uploading files:", error);
+        }
+
+        //setUploading({});
     };
 
     const handleFileSelect = (event) => {
@@ -65,8 +98,12 @@ const FileUploader = () => {
                     <div className="file-info">
                         <span className="file-name">{file.name}</span>
                         <span className="file-size">{formatFileSize(file.size)}</span>
+                        {uploading[index] && <span>Uploading...</span>}
                     </div>
-                    <button onClick={() => handleRemoveFile(index)}>Remove</button>
+                    <div className="file-buttons">
+                        <button className="analyse" onClick={() => analyseVideo()}>Analyse</button>
+                        <button className="remove" onClick={() => handleRemoveFile(index)}>Remove</button>
+                    </div>
                 </div>
             ))}
                 <div className="actions">

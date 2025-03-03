@@ -64,27 +64,68 @@ input[type="file"]{
     font-size: 16px;
 }
 
-.file-item button {
-    background-color: #d12424;
+.file-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.file-buttons button {
     border: none;
     padding: 5px 10px;
     border-radius: 5px;
     cursor: pointer;
 }
 
-.file-item button:hover {
+.file-buttons .analyse {
+    background-color: #3e63c7;
+    padding: 0px 30px;
+}
+
+.file-buttons .analyse:hover {
+    background-color: #5e7cce;
+}
+
+.file-buttons .remove {
+    background-color: #d12424;
+}
+
+.file-buttons .remove:hover {
     background-color: #f52c2cfd;
 }
+
+
+
+
 
 .file-info {
     display: flex;
     flex-direction: column; /* Stack name and size vertically */
 }
 
+@media (max-width: 600px) {
+    .file-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .file-info {
+        align-items: flex-start;;
+        text-align: left;
+        width: 100%;
+    }
+
+    .file-item button {
+        width: 100%;
+        text-align: center;
+    }
+}
+
 .actions {
     display: flex;
     justify-content: space-between;
     width: 100%;
+    min-width: 400px;
     margin-top: 10px;
 }
 
