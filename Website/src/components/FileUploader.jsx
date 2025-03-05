@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import "./FileUploader.css"
 
 const FileUploader = () => {
-    const [files, setFiles] = useState(null);
-    const [uploading, setUploading] = useState({});
+    const [files, setFiles] = useState([]);
+    const [uploadStatus, setUploadStatus] = useState({});
     const inputRef = useRef();
 
     const handleDragOver = (event) => {
@@ -19,36 +19,49 @@ const FileUploader = () => {
     // Change state to "done!" when finished. Also make sure that analyse
     // button only shows when file is uploaded.
     const handleUpload = async () => {
-        if (!files) return;
+        if (files.length === 0) return;
 
-        const data = new FormData();
-        files.forEach(file => {
+        for (let i=0; i<files.length; i++) {
+            const file = files[i];
+            const data = new FormData();
             data.append("files", file);
-        })
 
-        //setUploading(newLoadingState);
+            setUploadStatus((prevStatus) => ({
+                ...prevStatus,
+                [i]: "Uploading...",
+            }));
 
-        // Attempt connection to server
-        try{
-            const response = await fetch("http://127.0.0.1:5000/uploads", {
-                method: "POST",
-                body: data
-            });
+            try{
+                const response = await fetch("http://127.0.0.1:5000/uploads", {
+                    method: "POST",
+                    body: data
+                });
 
-            const jsonResponse = await response.json();
-            if (response.ok){
-                console.log("Uploaded files:", jsonResponse.uploaded);
-                //alert("Files uploaded successfully!");
+                const jsonResponse = await response.json();
+                if (response.ok){
+                    console.log("Uploaded file:", jsonResponse);
+                    //alert("Files uploaded successfully!");
+                    setUploadStatus((prevStatus) => ({
+                        ...prevStatus,
+                        [i]: "Done!",
+                    }));
+                }
+                else{
+                    console.error("Upload failed:", jsonResponse);
+                    //alert(`Some files failed to upload: ${jsonResponse.disallowed_files || "Unknown Error"}`);
+                    setUploadStatus((prevStatus) => ({
+                        ...prevStatus,
+                        [i]: "Failed!",
+                    }));
+                }
+            } catch (error){
+                console.error("Error uploading files:", error);
+                setUploadStatus((prevStatus) => ({
+                    ...prevStatus,
+                    [i]: "Failed!",
+                }));
             }
-            else{
-                console.error("Upload failed:", jsonResponse);
-                //alert(`Some files failed to upload: ${jsonResponse.disallowed_files || "Unknown Error"}`);
-            }
-        } catch (error){
-            console.error("Error uploading files:", error);
         }
-
-        //setUploading({});
     };
 
     const handleFileSelect = (event) => {
@@ -91,17 +104,21 @@ const FileUploader = () => {
     <div className="uploader">
         <input type="file" multiple onChange={handleFileSelect} hidden ref={inputRef}
     />
-        {files ? (
+        {files.length > 0 ? (
             <div className="uploads">
             {Array.from(files).map((file, index) => (
                 <div key={index} className="file-item">
                     <div className="file-info">
                         <span className="file-name">{file.name}</span>
                         <span className="file-size">{formatFileSize(file.size)}</span>
-                        {uploading[index] && <span>Uploading...</span>}
+                        <span>{uploadStatus[index]}</span>
                     </div>
                     <div className="file-buttons">
-                        <button className="analyse" onClick={() => analyseVideo()}>Analyse</button>
+                    {uploadStatus[index] === "Done!" && (
+                        <button className="analyse" onClick={() => analyseVideo(index)}>
+                            Analyse
+                        </button>
+                    )}
                         <button className="remove" onClick={() => handleRemoveFile(index)}>Remove</button>
                     </div>
                 </div>
