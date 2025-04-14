@@ -77,7 +77,7 @@ const FileUploader = () => {
         fileArr.splice(index, 1);
 
         if (fileArr.length === 0){
-            setFiles(null);
+            setFiles([]);
         }
         else{
             setFiles(fileArr);
@@ -115,9 +115,7 @@ const FileUploader = () => {
                     </div>
                     <div className="file-buttons">
                     {uploadStatus[index] === "Done!" && (
-                        <button className="analyse" onClick={() => analyseVideo(index)}>
-                            Analyse
-                        </button>
+                        <button className="analyse" onClick={() => analyseVideo(index)}>Analyse</button>
                     )}
                         <button className="remove" onClick={() => handleRemoveFile(index)}>Remove</button>
                     </div>
