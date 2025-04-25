@@ -111,27 +111,3 @@ class DeepfakeDetector:
             callbacks=callbacks
         )
         return history
-
-
-
-
-
-
-
-
-
-
-
-# Paths
-source_dir = 'D:\Final Year Project\Processed Datasets\dfdc'
-output_base = 'D:\Final Year Project\Processed Datasets\dfdc\split_dataset'
-
-# Output structure
-splits = ['train', 'val', 'test']
-classes = ['real', 'fake']
-split_ratios = [0.7, 0.15, 0.15]  # 70% train, 15% val, 15% test
-
-# Create output folders
-for split in splits:
-    for cls in classes:
-        os.makedirs(os.path.join(output_base, split, cls), exist_ok=True)
