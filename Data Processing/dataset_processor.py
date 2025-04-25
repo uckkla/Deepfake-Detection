@@ -1,7 +1,9 @@
 import json
 import os
+import shutil
 from face_extraction import extract_faces
 from frame_extraction import extract_frames
+import random
 
 def process_dfdc_videos(video_dir, output_base_dir, target_fps=5):
     """
@@ -12,19 +14,37 @@ def process_dfdc_videos(video_dir, output_base_dir, target_fps=5):
         output_base_dir: Directory containing dataset
         target_fps: Target frames per second
     """
+    processed = 0
+
     # Metadata contains data of all videos - if they are fake or real
     with open(os.path.join(video_dir, "metadata.json")) as metadata_json:
         metadata = json.load(metadata_json)
+
+    # Separate REAL and FAKE video files
+    real_videos = [fname for fname, meta in metadata.items() if meta["label"] == "REAL"]
+    fake_videos = [fname for fname, meta in metadata.items() if meta["label"] == "FAKE"]
     
+    print(f"Found {len(real_videos)} real videos and {len(fake_videos)} fake videos.")
+
+    # Downsample the larger set to match the smaller one
+    min_len = min(len(real_videos), len(fake_videos))
+    real_videos = random.sample(real_videos, min_len)
+    fake_videos = random.sample(fake_videos, min_len)
+
+    balanced_videos = real_videos + fake_videos
+    random.shuffle(balanced_videos)
+
     real_dir, fake_dir, temp_dir = create_required_directories(output_base_dir)
     
-    for filename, data in metadata.keys():
+    for filename in balanced_videos:
+        label = metadata[filename]["label"]
         video_path = os.path.join(video_dir, filename)
+
         if not os.path.exists(video_path):
             print(f"Warning: Missing video file {filename}")
             continue
         
-        output_dir = real_dir if data["label"] == "REAL" else fake_dir
+        output_dir = real_dir if label == "REAL" else fake_dir
 
         process_video(
             video_path=video_path,
@@ -32,6 +52,9 @@ def process_dfdc_videos(video_dir, output_base_dir, target_fps=5):
             temp_dir=temp_dir,
             target_fps=target_fps
         )
+
+        processed += 1
+        print(f"{processed}/{len(balanced_videos)} videos processed.")
 
 def process_celeb_df_videos(video_dir, output_base_dir, target_fps=5):
     """
@@ -44,33 +67,35 @@ def process_celeb_df_videos(video_dir, output_base_dir, target_fps=5):
     """
     real_dir, fake_dir, temp_dir = create_required_directories(output_base_dir)
 
-    # Process real videos (Celeb-real and YouTube-real)
-    for real_subdir in ["Celeb-real", "YouTube-real"]:
-        real_path = os.path.join(video_dir, real_subdir)
-        if not os.path.exists(real_path):
-            print(f"Warning: Missing directory {real_subdir}")
-            continue
+    celeb_fake_dir = os.path.join(video_dir, "Celeb-synthesis")
+    fake_videos = [os.path.join(celeb_fake_dir, f) for f in os.listdir(celeb_fake_dir) if os.path.isfile(os.path.join(celeb_fake_dir, f))]
 
-        for video_file in os.listdir(real_path):
-            process_video(
-                video_path=os.path.join(real_path, video_file),
-                output_dir=real_dir,
-                temp_dir=temp_dir,
-                target_fps=target_fps
-            )
+    real_videos = []
+    for real_subdir in ["Celeb-real", "YouTube-real"]:
+        real_input_dir = os.path.join(video_dir, real_subdir)
+        real_videos += [os.path.join(real_input_dir, f) for f in os.listdir(real_input_dir) if os.path.isfile(os.path.join(real_input_dir, f))]
     
-    # Process fake videos (Celeb-synthesis)
-    fake_path = os.path.join(video_dir, "Celeb-synthesis")
-    if not os.path.exists(fake_path):
-        print(f"Warning: Missing directory {fake_path}")
-    else:
-        for video_file in os.listdir(fake_path):
+    print(f"Found {len(real_videos)} real videos and {len(fake_videos)} fake videos.")
+
+    min_len = min(len(real_videos), len(fake_videos))
+    real_videos = random.sample(real_videos, min_len)
+    fake_videos = random.sample(fake_videos, min_len)
+
+    processed = 0
+    total = len(real_videos) + len(fake_videos)
+
+    for video_type in [real_videos, fake_videos]:
+        output_dir = real_dir if video_type is real_videos else fake_dir
+        for video_path in video_type:
             process_video(
-                video_path=os.path.join(fake_path, video_file),
-                output_dir=fake_dir,
+                video_path=video_path,
+                output_dir=output_dir,
                 temp_dir=temp_dir,
                 target_fps=target_fps
             )
+
+            processed += 1
+            print(f"{processed}/{total} videos processed.")
 
 def process_video(video_path, output_dir, temp_dir, target_fps):
     """
@@ -82,6 +107,10 @@ def process_video(video_path, output_dir, temp_dir, target_fps):
         target_fps: Target frames per second
     """
     try:
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        os.makedirs(temp_dir, exist_ok=True)
+
         extract_frames(
             video_path=video_path,
             output_folder=temp_dir,
@@ -106,7 +135,6 @@ def process_video(video_path, output_dir, temp_dir, target_fps):
     """
 
 """
-# Need to change logic - if image should be deleted here or somewhere else
 def process_image(image_dir, output_dir, temp_dir):
     #
     Generic processing of image - used for user input
@@ -121,7 +149,7 @@ def process_image(image_dir, output_dir, temp_dir):
         output_dir=output_dir,
         filename_prefix=image_id
     )
-    os.remove(image_path)
+    #os.remove(image_path)
 """
 
 def create_required_directories(output_base_dir):
@@ -140,3 +168,9 @@ def create_required_directories(output_base_dir):
         os.makedirs(d, exist_ok=True)
     return dirs
     
+
+if __name__ == "__main__":
+    video_path = r"xxx"
+    output_dir = r"Dxxx"
+    target_fps = 2
+    process_celeb_df_videos(video_path, output_dir, target_fps)

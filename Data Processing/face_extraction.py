@@ -2,7 +2,7 @@ import cv2
 import os
 from mtcnn import MTCNN
 
-def extract_faces(frame_dir, output_dir, min_confidence=0.9, margin=0.3, filename_prefix=""):
+def extract_faces(frame_dir, output_dir, min_confidence=0.95, margin=0.3, filename_prefix=""):
     os.makedirs(output_dir, exist_ok=True)
     detector = MTCNN()
 

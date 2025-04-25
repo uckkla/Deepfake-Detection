@@ -20,7 +20,7 @@ def extract_frames(video_path, output_folder, fps=5, min_width=300):
     if not capture.isOpened():
         raise RuntimeError("Failed to open video file")
 
-    native_fps = cv2.get(cv2.CAP_PROP_FPS)
+    native_fps = capture.get(cv2.CAP_PROP_FPS)
     total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_interval = int(native_fps/fps)
 
