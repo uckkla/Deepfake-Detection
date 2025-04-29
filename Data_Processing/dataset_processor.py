@@ -1,8 +1,8 @@
 import json
 import os
 import shutil
-from face_extraction import extract_faces
-from frame_extraction import extract_frames
+from Data_Processing.face_extraction import extract_faces
+from Data_Processing.frame_extraction import extract_frames
 import random
 
 def process_dfdc_videos(video_dir, output_base_dir, target_fps=5):
@@ -160,7 +160,8 @@ def process_video(video_path, output_dir, temp_dir, target_fps):
         extract_faces(
             frame_dir=temp_dir,
             output_dir=output_dir,
-            filename_prefix=video_id
+            filename_prefix=video_id,
+            single_image=False
             )
         
     except Exception as e:
@@ -184,17 +185,17 @@ def process_user_video(video_path, output_dir, target_fps=5):
         target_fps=target_fps
     )
 
-
 def process_user_image(image_path, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     
-    image_dir = os.path.dirname(image_path)
+    #image_dir = os.path.dirname(image_path)
     image_id = os.path.splitext(os.path.basename(image_path))[0]
 
     extract_faces(
-        frame_dir=image_dir,
+        frame_dir=image_path,
         output_dir=output_dir,
-        filename_prefix=image_id
+        filename_prefix=image_id,
+        single_image=True
     )
 
 def create_required_directories(output_base_dir):

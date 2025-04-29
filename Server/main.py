@@ -1,11 +1,12 @@
+#from Model.train_model import DeepfakeDetector
 from tensorflow.keras.models import load_model
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-#from Model.train_model import DeepfakeDetector
-from Data_Processing.dataset_processor import process_user_video, process_user_image
 import os
 import tensorflow as tf
+import sys
+from Data_Processing.dataset_processor import process_user_video, process_user_image
 
 UPLOAD_FOLDER = "uploads"
 PROCESSED_FOLDER = "processed"
@@ -13,6 +14,7 @@ MODEL_PATH = os.path.join("Model", "final_model", "best_model.keras")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "avi", "mov", "mkv"}
+CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
 CORS(app, origins="http://localhost:5173")
@@ -29,6 +31,7 @@ def preprocess_image(path, input_shape=(224, 224)):
     image = tf.image.decode_jpeg(image, channels=3)
     image = tf.image.resize(image, input_shape)
     image = image / 255.0  # Normalisation
+    #print(tf.reduce_min(image), tf.reduce_max(image), tf.reduce_mean(image))
 
     return image
 
@@ -45,7 +48,9 @@ def UploadFiles():
     for file in uploadedFiles:
         if file and AllowedFile(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            upload_path = os.path.join(CURRENT_DIRECTORY, app.config["UPLOAD_FOLDER"], filename)
+            os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+            file.save(upload_path)
             savedFiles.append(filename)
         else:
             failedFiles.append(file.filename)
@@ -62,19 +67,21 @@ def UploadFiles():
 def AnalyseFile():
     data = request.get_json()
     filename = data.get("filename")
+    print(filename)
 
     if not filename:
         return jsonify({"error": "Filename not provided"}), 400
     
-    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    filepath = os.path.join(CURRENT_DIRECTORY, app.config["UPLOAD_FOLDER"], filename)
     if not os.path.exists(filepath):
         return jsonify({"error": "File not found"}), 404
     
     file_ext = filename.rsplit(".", 1)[1].lower()
 
     # Directory to save extracted faces temporarily
-    face_dir = "user_faces"
-    os.makedirs("user_faces", exist_ok=True)
+    
+    face_dir = os.path.join(CURRENT_DIRECTORY, "temp_faces", filename.rsplit(".", 1)[0])
+    os.makedirs(face_dir, exist_ok=True)
 
     try:
         if file_ext in ALLOWED_IMAGE_EXTENSIONS:
@@ -101,6 +108,7 @@ def AnalyseFile():
                 img = preprocess_image(path=face_path)
                 img = tf.expand_dims(img, axis=0)  # Add batch dimension
                 pred = model.predict(img)[0][0]
+                print(f"Prediction for {face_path}: {pred}")
                 predictions.append(pred)      
             except Exception as e:
                 print(f"Error processing {face_path}: {e}")
@@ -117,11 +125,11 @@ def AnalyseFile():
         })
 
     finally:
-        # Optional: cleanup extracted face images after prediction
         import shutil
         shutil.rmtree(face_dir, ignore_errors=True)
 
 if __name__ == "__main__":
     # Create upload folder if does not exist
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    upload_folder_path = os.path.join(CURRENT_DIRECTORY, UPLOAD_FOLDER)  # Combine paths
+    os.makedirs(upload_folder_path, exist_ok=True)
     app.run(debug=True)
