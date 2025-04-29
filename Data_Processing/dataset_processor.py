@@ -97,6 +97,45 @@ def process_celeb_df_videos(video_dir, output_base_dir, target_fps=5):
             processed += 1
             print(f"{processed}/{total} videos processed.")
 
+def process_faceforensics_videos(video_dir, output_base_dir, target_fps=5):
+    """
+    Processing videos provided by FaceForensics
+    https://www.kaggle.com/datasets/sanikatiwarekar/deep-fake-detection-dfd-entire-original-dataset/data
+     Args:
+        video_path: Input video file path
+        output_base_dir: Directory containing dataset
+        target_fps: Target frames per second
+    """
+    real_dir, fake_dir, temp_dir = create_required_directories(output_base_dir)
+
+    real_input_dir = os.path.join(video_dir, "DFD_original sequences")
+    fake_input_dir = os.path.join(video_dir, "DFD_manipulated_sequences")
+
+    real_videos = [os.path.join(real_input_dir, f) for f in os.listdir(real_input_dir) if os.path.isfile(os.path.join(real_input_dir, f))]
+    fake_videos = [os.path.join(fake_input_dir, f) for f in os.listdir(fake_input_dir) if os.path.isfile(os.path.join(fake_input_dir, f))]
+
+    print(f"Found {len(real_videos)} real videos and {len(fake_videos)} fake videos.")
+
+    min_len = min(len(real_videos), len(fake_videos))
+    real_videos = random.sample(real_videos, min_len)
+    fake_videos = random.sample(fake_videos, min_len)
+
+    processed = 0
+    total = len(real_videos) + len(fake_videos)
+
+    for video_type in [real_videos, fake_videos]:
+        output_dir = real_dir if video_type is real_videos else fake_dir
+        for video_path in video_type:
+            process_video(
+                video_path=video_path,
+                output_dir=output_dir,
+                temp_dir=temp_dir,
+                target_fps=target_fps
+            )
+
+            processed += 1
+            print(f"{processed}/{total} videos processed.")
+
 def process_video(video_path, output_dir, temp_dir, target_fps):
     """
     Generic processing of videos - used for datasets and user input
@@ -134,23 +173,29 @@ def process_video(video_path, output_dir, temp_dir, target_fps):
                 os.remove(os.path.join(temp_dir, f))
     """
 
-"""
-def process_image(image_dir, output_dir, temp_dir):
-    #
-    Generic processing of image - used for user input
-    Args:
-        image_path: Input image file path
-        output_dir: Directory to save faces
-    #
-    image_path = os.path.join(image_dir, os.listdir(image_dir))
+def process_user_video(video_path, output_dir, target_fps=5):
+    temp_dir = os.path.join(output_dir, "temp_frames")
+    os.makedirs(temp_dir, exist_ok=True)
+    
+    process_video(
+        video_path=video_path,
+        output_dir=output_dir,
+        temp_dir=temp_dir,
+        target_fps=target_fps
+    )
+
+
+def process_user_image(image_path, output_dir):
+    os.makedirs(output_dir, exist_ok=True)
+    
+    image_dir = os.path.dirname(image_path)
     image_id = os.path.splitext(os.path.basename(image_path))[0]
+
     extract_faces(
         frame_dir=image_dir,
         output_dir=output_dir,
         filename_prefix=image_id
     )
-    #os.remove(image_path)
-"""
 
 def create_required_directories(output_base_dir):
     """
@@ -170,7 +215,13 @@ def create_required_directories(output_base_dir):
     
 
 if __name__ == "__main__":
-    video_path = r"xxx"
-    output_dir = r"Dxxx"
+    #video_path = r"D:\Final Year Project\Deepfake Resources\Celeb-DF-v2"
+    #output_dir = r"D:\Final Year Project\Processed Datasets\celeb-df-v2"
+    #video_path = r"D:\Final Year Project\Deepfake Resources\dfdc_train_part_10\dfdc_train_part_10"
+    #output_dir = r"D:\Final Year Project\Processed Datasets\dfdc\dfdc10"
+    video_path = r"D:\Final Year Project\Deepfake Resources\faceforensics"
+    output_dir = r"D:\Final Year Project\Processed Datasets\faceforensics"
     target_fps = 2
-    process_celeb_df_videos(video_path, output_dir, target_fps)
+    #process_celeb_df_videos(video_path, output_dir, target_fps)
+    #process_dfdc_videos(video_path, output_dir, target_fps)
+    process_faceforensics_videos(video_path, output_dir, target_fps)

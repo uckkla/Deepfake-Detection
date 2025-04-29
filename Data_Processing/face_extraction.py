@@ -32,11 +32,3 @@ def extract_faces(frame_dir, output_dir, min_confidence=0.95, margin=0.3, filena
             # Output face
             output_path = os.path.join(output_dir, f"{filename_prefix}_{os.path.splitext(frame_name)[0]}_face_{i}.jpg")
             cv2.imwrite(output_path, face_img)
-
-"""
-# Usage
-extract_faces(
-    frame_dir="???",
-    output_dir="???",
-)
-"""

@@ -5,6 +5,7 @@ const FileUploader = () => {
     const [files, setFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState({});
     const inputRef = useRef();
+    const [predictions, setPredictions] = useState({})
 
     const handleDragOver = (event) => {
         event.preventDefault();
@@ -64,6 +65,35 @@ const FileUploader = () => {
         }
     };
 
+    const analyseFile = async (index) => {
+        const file = files[index];
+    
+        try {
+            const response = await fetch("http://127.0.0.1:5000/analyse", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ filename: file.name }),
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                setPredictions((prev) => ({
+                    ...prev,
+                    [index]: {
+                        label: data.label,
+                        confidence: data.confidence,
+                    },
+                }));
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error("Error during analysis:", error);
+            alert("Analysis failed. Please try again.");
+        }
+    };
+
     const handleFileSelect = (event) => {
         const selectedFiles = Array.from(event.target.files);
         setFiles((prevFiles) => [...(prevFiles || []), ...selectedFiles]);
@@ -112,10 +142,16 @@ const FileUploader = () => {
                         <span className="file-name">{file.name}</span>
                         <span className="file-size">{formatFileSize(file.size)}</span>
                         <span>{uploadStatus[index]}</span>
+                        {predictions[index] && (
+                            <div className="prediction-result">
+                                <strong>Prediction:</strong> {predictions[index].label} <br />
+                                <strong>Confidence:</strong> {(predictions[index].confidence * 100).toFixed(2)}%
+                            </div>
+                        )}
                     </div>
                     <div className="file-buttons">
                     {uploadStatus[index] === "Done!" && (
-                        <button className="analyse" onClick={() => analyseVideo(index)}>Analyse</button>
+                        <button className="analyse" onClick={() => analyseFile(index)}>Analyse</button>
                     )}
                         <button className="remove" onClick={() => handleRemoveFile(index)}>Remove</button>
                     </div>

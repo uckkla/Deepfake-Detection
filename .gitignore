@@ -2,4 +2,5 @@ Deepfake Resources/
 Server/.venv/
 Server/uploads/
 Processed Datasets/
+Model/
 **__pycache__/
