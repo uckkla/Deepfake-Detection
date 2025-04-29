@@ -216,13 +216,7 @@ def create_required_directories(output_base_dir):
     
 
 if __name__ == "__main__":
-    #video_path = r"D:\Final Year Project\Deepfake Resources\Celeb-DF-v2"
-    #output_dir = r"D:\Final Year Project\Processed Datasets\celeb-df-v2"
-    #video_path = r"D:\Final Year Project\Deepfake Resources\dfdc_train_part_10\dfdc_train_part_10"
-    #output_dir = r"D:\Final Year Project\Processed Datasets\dfdc\dfdc10"
-    video_path = r"D:\Final Year Project\Deepfake Resources\faceforensics"
-    output_dir = r"D:\Final Year Project\Processed Datasets\faceforensics"
     target_fps = 2
-    #process_celeb_df_videos(video_path, output_dir, target_fps)
-    #process_dfdc_videos(video_path, output_dir, target_fps)
-    process_faceforensics_videos(video_path, output_dir, target_fps)
+    video_path = r"D:\Final Year Project\Deepfake Resources\TINY_DFDC_SAMPLE"
+    output_dir = r"D:\Final Year Project\Deepfake Resources\TINY_DFDC_SAMPLE_OUTPUT"
+    process_dfdc_videos(video_path, output_dir, target_fps)

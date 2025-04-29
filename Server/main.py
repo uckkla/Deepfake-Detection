@@ -11,9 +11,10 @@ from Data_Processing.dataset_processor import process_user_video, process_user_i
 UPLOAD_FOLDER = "uploads"
 PROCESSED_FOLDER = "processed"
 MODEL_PATH = os.path.join("Model", "final_model", "best_model.keras")
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+#MODEL_PATH = os.path.join("Model", "finished_model_6", "best_model (1).keras")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "avi", "mov", "mkv"}
+ALLOWED_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
