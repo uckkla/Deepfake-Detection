@@ -5,12 +5,13 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 import tensorflow as tf
+import numpy as np
 import sys
 from Data_Processing.dataset_processor import process_user_video, process_user_image
 
 UPLOAD_FOLDER = "uploads"
 PROCESSED_FOLDER = "processed"
-MODEL_PATH = os.path.join("Model", "final_model", "best_model.keras")
+MODEL_PATH = os.path.join("Model", "the_final_model", "best_model.keras")
 #MODEL_PATH = os.path.join("Model", "finished_model_6", "best_model (1).keras")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "avi", "mov", "mkv"}
@@ -117,7 +118,19 @@ def AnalyseFile():
         if not predictions:
             return jsonify({"error": "Face preprocessing or prediction failed"}), 500
 
-        prediction = sum(predictions) / len(predictions)
+        predictions = np.array(predictions)
+        
+        # Interquartile Range filtering
+        q1 = np.percentile(predictions, 25)
+        q3 = np.percentile(predictions, 75)
+        iqr = q3 - q1
+
+        lower_bound = q1 - 1.5 * iqr
+        upper_bound = q3 + 1.5 * iqr
+
+        filtered = predictions[(predictions >= lower_bound) & (predictions <= upper_bound)]
+
+        prediction = float(np.mean(filtered))
 
         return jsonify({
             "filename": filename,
