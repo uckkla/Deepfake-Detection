@@ -1,10 +1,13 @@
 import json
 import os
 import shutil
-from Data_Processing.face_extraction import extract_faces
-from Data_Processing.frame_extraction import extract_frames
+from face_extraction import extract_faces
+from frame_extraction import extract_frames
 import random
 
+
+# Need to redo code, make similar to celeb-df
+# No need to merge, shuffle & search for labels
 def process_dfdc_videos(video_dir, output_base_dir, target_fps=5):
     """
     Processing videos provided by DFDC (Deepfake Detection Challenge), Meta
@@ -217,6 +220,7 @@ def create_required_directories(output_base_dir):
 
 if __name__ == "__main__":
     target_fps = 2
-    video_path = r"D:\Final Year Project\Deepfake Resources\TINY_DFDC_SAMPLE"
-    output_dir = r"D:\Final Year Project\Deepfake Resources\TINY_DFDC_SAMPLE_OUTPUT"
+    video_path = r"Set_As_Your_Input_Path"
+    output_dir = r"Set_As_Your_Output_Path"
+
     process_dfdc_videos(video_path, output_dir, target_fps)

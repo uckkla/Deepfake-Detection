@@ -3,4 +3,5 @@ Server/.venv/
 Server/uploads/
 Processed Datasets/
 Model/
+Website.zip
 **__pycache__/
