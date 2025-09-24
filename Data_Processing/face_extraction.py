@@ -18,7 +18,7 @@ def extract_faces(frame_dir, output_dir, min_confidence=0.95, margin=0.3, filena
         if frame is None:
             print(f"[WARNING] Could not read image: {frame_path}")
             continue
-
+        
         faces = detector.detect_faces(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
         for i, face in enumerate(faces):

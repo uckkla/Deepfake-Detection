@@ -1,8 +1,9 @@
 import json
 import os
 import shutil
-from face_extraction import extract_faces
-from frame_extraction import extract_frames
+import argparse
+from .face_extraction import extract_faces
+from .frame_extraction import extract_frames
 import random
 
 
@@ -219,8 +220,35 @@ def create_required_directories(output_base_dir):
     
 
 if __name__ == "__main__":
-    target_fps = 2
-    video_path = r"Set_As_Your_Input_Path"
-    output_dir = r"Set_As_Your_Output_Path"
+    parser = argparse.ArgumentParser(description="Process Videos for Deepfake Detection")
+    # Input path to the directory containing raw videos (and metadata.json if DFDC)
+    parser.add_argument(
+        "--video_path", type=str, required=True,
+        help="Path to the input video directory"
+    )
 
-    process_dfdc_videos(video_path, output_dir, target_fps)
+    # Output path where processed frames/faces will be saved
+    parser.add_argument(
+        "--output_dir", type=str, required=True,
+        help="Directory where the processed data will be stored"
+    )
+
+    # Target FPS to extract frames from videos
+    parser.add_argument(
+        "--target_fps", type=int, default=2,
+        help="Target frames per second for frame extraction (default: 2)"
+    )
+
+    # Choose dataset type: dfdc, celebdf, or faceforensics
+    parser.add_argument(
+        "--dataset", choices=["dfdc", "celebdf", "faceforensics"], required=True,
+        help="Type of dataset to process"
+    )
+    args = parser.parse_args()
+
+    if args.dataset == "dfdc":
+        process_dfdc_videos(args.video_path, args.output_dir, args.target_fps)
+    elif args.dataset == "celebdf":
+        process_celeb_df_videos(args.video_path, args.output_dir, args.target_fps)
+    elif args.dataset == "faceforensics":
+        process_faceforensics_videos(args.video_path, args.output_dir, args.target_fps)

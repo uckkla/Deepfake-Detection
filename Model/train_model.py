@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models
 import os
+import argparse
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
@@ -96,9 +97,10 @@ class DeepfakeDetector:
         dataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
         return dataset
 
-    def train(self, train_data, val_data, epochs=20):
+    def train(self, train_data, val_data, epochs_max=100, model_dir=""):
         train_ds = self.data_generator(*train_data, augment=True)
         val_ds = self.data_generator(*val_data, augment=False)
+        model_dir = os.path.join(model_dir,"best_model.keras")
 
         callbacks = [
             tf.keras.callbacks.EarlyStopping(
@@ -107,7 +109,7 @@ class DeepfakeDetector:
                 restore_best_weights=True
             ),
             tf.keras.callbacks.ModelCheckpoint(
-                "best_model.keras",
+                model_dir,
                 monitor="val_loss",
                 save_best_only=True
             )
@@ -170,7 +172,7 @@ class DeepfakeDetector:
             train_ds,
             validation_data=val_ds,
             initial_epoch=10,
-            epochs=100,
+            epochs=epochs_max,
             callbacks=callbacks
         )
         for key in full_history.keys():
@@ -178,16 +180,42 @@ class DeepfakeDetector:
 
         return full_history
 
-if __name__ == "__main__":
-    # Step 1: Instantiate the model
-    detector = DeepfakeDetector(input_shape=(224, 224, 3), batch_size=128)
+def min_int_type(arg):
+    ivalue = int(arg)
+    if ivalue < 15:
+        raise argparse.ArgumentTypeError(f"Minimum value is 15, got {ivalue}")
+    return ivalue
 
-    (train_X, train_y), (val_X, val_y), (test_X, test_y) = detector.load_data(data_dir)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train Deepfake Detection Model")
+    parser.add_argument(
+        "--data_dir", type=str, required=True,
+        help="Path to the dataset folder containing 'real/' and 'fake/' subfolders"
+    )
+    parser.add_argument(
+        "--model_dir", type=str, default = "",
+        help="Path to save the best model (default: current directory)"
+    )
+    parser.add_argument(
+        "--epochs", type=min_int_type, default=100,
+        help="Total number of epochs (minimum: 15, default: 100)"
+    )
+    parser.add_argument(
+        "--batch_size", type=int, default=128,
+        help="Batch size for training (default: 128)"
+    )
+    args = parser.parse_args()
+
+    # Initialise deepfake detector model
+    detector = DeepfakeDetector(input_shape=(224, 224, 3), batch_size=args.batch_size)
+
+    # Load dataset and split into train/val/test
+    (train_X, train_y), (val_X, val_y), (test_X, test_y) = detector.load_data(args.data_dir)
 
     # Step 3: Train the model
-    history = detector.train((train_X, train_y), (val_X, val_y), epochs=20)
+    history = detector.train((train_X, train_y), (val_X, val_y), epochs_max=args.epochs, model_dir=args.model_dir)
 
-    # Optional Step 4: Evaluate on test set
+    # Evaluate the trained model on the test set and print accuracy
     test_dataset = detector.data_generator(test_X, test_y)
     test_loss, test_acc = detector.model.evaluate(test_dataset)
     print(f"Test Accuracy: {test_acc:.4f}")

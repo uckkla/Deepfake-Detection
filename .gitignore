@@ -1,7 +1,7 @@
 Deepfake Resources/
-Server/.venv/
+Test Resources/
+.venv
 Server/uploads/
 Processed Datasets/
 Model/
-Website.zip
 **__pycache__/
